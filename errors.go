@@ -1,15 +1,24 @@
 package pocket
 
-import "errors"
-
-var (
-	ErrMissingConsumerKey = errors.New("missing consumer key")
-	ErrInvalidConsumerKey = errors.New("invalid consumer key")
-	ErrMissingRedirectUri = errors.New("missing redirect uri")
-	ErrInvalidRedirectUri = errors.New("invalid redirect uri")
-	ErrPocketServerIssue  = errors.New("pocket server issue")
-	ErrMissingCode        = errors.New("missing code")
-	ErrNoCode             = errors.New("code not found")
-	ErrRejectedCode       = errors.New("user rejected code")
-	ErrCodeAlreadyUsed    = errors.New("already used code")
+import (
+	"fmt"
 )
+
+type ErrorPocket struct {
+	Message string
+	// see X-Code-Error here https://getpocket.com/developer/docs/authentication
+	Xcode    int
+	HttpCode int
+}
+
+func (pe *ErrorPocket) Error() string {
+	return fmt.Sprintf("%s-%d-%d", pe.Message, pe.Xcode, pe.HttpCode)
+}
+
+func NewErrorPocket(message string, xCode int, httpCode int) *ErrorPocket {
+	return &ErrorPocket{
+		Message:  message,
+		Xcode:    xCode,
+		HttpCode: httpCode,
+	}
+}

@@ -5,9 +5,8 @@ import (
 )
 
 type ErrorPocket struct {
-	Message string
-	// see X-Code-Error here https://getpocket.com/developer/docs/authentication
-	Xcode    int
+	Message  string
+	Xcode    int // see X-Code-Error here https://getpocket.com/developer/docs/authentication
 	HttpCode int
 }
 

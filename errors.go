@@ -11,7 +11,7 @@ type ErrorPocket struct {
 }
 
 func (pe *ErrorPocket) Error() string {
-	return fmt.Sprintf("%s-%d-%d", pe.Message, pe.Xcode, pe.HttpCode)
+	return fmt.Sprintf("%s-%s-%d", pe.Message, pe.Xcode, pe.HttpCode)
 }
 
 func NewErrorPocket(message string, xCode string, httpCode int) *ErrorPocket {

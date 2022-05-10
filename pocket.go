@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"time"
 )
@@ -49,14 +50,18 @@ func (p *Pocket) WithHttpClient(client *http.Client) *Pocket {
 
 func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData interface{}) (map[string]string, error) {
 	res := make(map[string]string)
-	url := path.Join(p.baseURL, pocketPath)
+	u, err := url.Parse(p.baseURL)
+	if err != nil {
+		return nil, fmt.Errorf("error while parsing base url: %w", err)
+	}
+	u.Path = path.Join(u.Path, pocketPath)
 
 	body, err := json.Marshal(reqData)
 	if err != nil {
 		return nil, fmt.Errorf("error while marshalling request body: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fmt.Errorf("error while building request: %w", err)
 	}
@@ -90,13 +95,13 @@ func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData inter
 	return res, nil
 }
 
-type requestTokenRequest struct {
+type codeRequest struct {
 	ConsumerKey string `json:"consumer_key"`
 	RedirectUri string `json:"redirect_uri"`
 }
 
 func (p *Pocket) GenerateRequestToken(ctx context.Context, redirectURI string) (string, error) {
-	resp, err := p.doRequest(ctx, requestTokenPath, &requestTokenRequest{
+	resp, err := p.doRequest(ctx, requestTokenPath, &codeRequest{
 		ConsumerKey: p.consumerKey,
 		RedirectUri: redirectURI,
 	})

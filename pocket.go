@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	baseURL = "https://getpocket.com/"
-
+	baseURL          = "https://getpocket.com/"
 	requestTokenPath = "/v3/oauth/request"
+)
 
+const (
 	requestTokenKey = "code"
 )
 

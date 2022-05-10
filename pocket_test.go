@@ -1,1 +1,174 @@
 package pocket
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+const (
+	redirectURL  = "https://google.com"
+	consumerKey  = "consumer-key"
+	requestToken = "request-token"
+)
+
+// messages
+const (
+	msgMissConsumerKey    = "Missing consumer key"
+	msgMissRedirectUrl    = "Missing redirect url."
+	msgInvalidConsumerKey = "Invalid consumer key."
+	msgPocketServerIssue  = "Pocket server issue."
+)
+
+// x error codes
+const (
+	xMissConsumerKey    = "138"
+	xMissRedirectUrl    = "140"
+	xInvalidConsumerKey = "152"
+	xPocketServerIssue  = "199"
+)
+
+func TestPocket_AuthApp(t *testing.T) {
+	tests := []struct {
+		name        string
+		consumerKey string
+		redirectUrl string
+		expErr      *ErrorPocket
+		expToken    string
+		handler     func(t *testing.T) http.HandlerFunc
+	}{
+		{
+			name:        "Missing consumer key",
+			redirectUrl: redirectURL,
+			expErr: &ErrorPocket{
+				Message:  msgMissConsumerKey,
+				Xcode:    xMissConsumerKey,
+				HttpCode: http.StatusBadRequest,
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return func(w http.ResponseWriter, r *http.Request) {
+					require.Equal(t, requestTokenPath, r.URL.Path)
+
+					w.Header().Add("X-Error-Code", xMissConsumerKey)
+					w.Header().Add("X-Error", msgMissConsumerKey)
+					w.WriteHeader(http.StatusBadRequest)
+				}
+			},
+		},
+		{
+			name:        "Missing redirect url",
+			consumerKey: consumerKey,
+			redirectUrl: "",
+			expErr: &ErrorPocket{
+				Message:  msgMissRedirectUrl,
+				Xcode:    xMissRedirectUrl,
+				HttpCode: http.StatusBadRequest,
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return func(w http.ResponseWriter, r *http.Request) {
+					require.Equal(t, requestTokenPath, r.URL.Path)
+
+					w.Header().Add("X-Error-Code", xMissRedirectUrl)
+					w.Header().Add("X-Error", msgMissRedirectUrl)
+					w.WriteHeader(http.StatusBadRequest)
+				}
+			},
+		},
+		{
+			name:        "Invalid consumer key",
+			consumerKey: consumerKey + "invalid",
+			redirectUrl: redirectURL,
+			expErr: &ErrorPocket{
+				Message:  msgInvalidConsumerKey,
+				Xcode:    xInvalidConsumerKey,
+				HttpCode: http.StatusForbidden,
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return func(w http.ResponseWriter, r *http.Request) {
+					require.Equal(t, requestTokenPath, r.URL.Path)
+
+					w.Header().Add("X-Error-Code", xInvalidConsumerKey)
+					w.Header().Add("X-Error", msgInvalidConsumerKey)
+					w.WriteHeader(http.StatusForbidden)
+				}
+			},
+		},
+		{
+			name:        "Pocket server issue",
+			consumerKey: consumerKey,
+			redirectUrl: redirectURL,
+			expErr: &ErrorPocket{
+				Message:  msgPocketServerIssue,
+				Xcode:    xPocketServerIssue,
+				HttpCode: http.StatusInternalServerError,
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return func(w http.ResponseWriter, r *http.Request) {
+					require.Equal(t, requestTokenPath, r.URL.Path)
+
+					w.Header().Add("X-Error-Code", xPocketServerIssue)
+					w.Header().Add("X-Error", msgPocketServerIssue)
+					w.WriteHeader(http.StatusInternalServerError)
+				}
+			},
+		},
+		{
+			name:        "Success",
+			consumerKey: consumerKey,
+			redirectUrl: redirectURL,
+			expToken:    requestToken,
+			handler: func(t *testing.T) http.HandlerFunc {
+				return func(w http.ResponseWriter, r *http.Request) {
+					data, err := io.ReadAll(r.Body)
+					require.NoError(t, err)
+
+					req := codeRequest{}
+					require.NoError(t, json.Unmarshal(data, &req))
+
+					require.Equal(t, consumerKey, req.ConsumerKey)
+					require.Equal(t, redirectURL, req.RedirectUri)
+					require.Equal(t, requestTokenPath, r.URL.Path)
+
+					resp := map[string]string{
+						requestTokenKey: requestToken,
+					}
+					data, err = json.Marshal(resp)
+					require.NoError(t, err)
+					w.Header().Add("Content-type", "application/json")
+					w.Write(data)
+					w.WriteHeader(http.StatusOK)
+				}
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := httptest.NewServer(tc.handler(t))
+			defer srv.Close()
+
+			p := New(tc.consumerKey).WithBaseUrl(srv.URL)
+
+			err := p.AuthApp(context.Background(), tc.redirectUrl)
+
+			if tc.expErr != nil {
+				var perr *ErrorPocket
+				if errors.As(err, &perr) {
+					require.Equal(t, tc.expErr.Message, perr.Message)
+					require.Equal(t, tc.expErr.Xcode, perr.Xcode)
+					require.Equal(t, tc.expErr.HttpCode, perr.HttpCode)
+				} else {
+					require.Fail(t, "unknown error", err)
+				}
+			} else {
+				require.Equal(t, tc.expToken, p.GetRequestToken())
+			}
+		})
+	}
+}

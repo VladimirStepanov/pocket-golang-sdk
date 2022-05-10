@@ -15,10 +15,12 @@ import (
 const (
 	baseURL          = "https://getpocket.com/"
 	requestTokenPath = "/v3/oauth/request"
+	accessTokenPath  = "/v3/oauth/authorize"
 )
 
 const (
 	requestTokenKey = "code"
+	accessTokenKey  = "access_token"
 )
 
 type Pocket struct {
@@ -129,8 +131,20 @@ func (p *Pocket) AuthApp(ctx context.Context, redirectURI string) error {
 	return nil
 }
 
+type accessTokenRequest struct {
+	ConsumerKey string `json:"consumer_key"`
+	Code        string `json:"code"`
+}
+
 func (p *Pocket) GenerateAccessToken(ctx context.Context) (string, error) {
-	return "", nil
+	resp, err := p.doRequest(ctx, accessTokenPath, &accessTokenRequest{
+		ConsumerKey: p.consumerKey,
+		Code:        p.requestToken,
+	})
+	if err != nil {
+		return "", err
+	}
+	return resp[accessTokenKey], nil
 }
 
 func (p *Pocket) GetAccessToken() string {
@@ -139,4 +153,13 @@ func (p *Pocket) GetAccessToken() string {
 
 func (p *Pocket) SetAccessToken(at string) {
 	p.accessToken = at
+}
+
+func (p *Pocket) AuthUser(ctx context.Context) error {
+	var err error
+	p.accessToken, err = p.GenerateAccessToken(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }

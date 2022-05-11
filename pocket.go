@@ -17,6 +17,7 @@ const (
 	requestTokenPath = "/v3/oauth/request"
 	accessTokenPath  = "/v3/oauth/authorize"
 	authPath         = "/auth/authorize"
+	addPath          = "/v3/add"
 )
 
 type Pocket struct {
@@ -47,8 +48,7 @@ func (p *Pocket) WithHttpClient(client *http.Client) *Pocket {
 	return p
 }
 
-func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData interface{}) (map[string]string, error) {
-	res := make(map[string]string)
+func (p *Pocket) doRequestRaw(ctx context.Context, pocketPath string, reqData interface{}) ([]byte, error) {
 	u, err := url.Parse(p.baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("error while parsing base url: %w", err)
@@ -84,6 +84,16 @@ func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData inter
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error while reading data from response: %w", err)
+	}
+
+	return data, nil
+}
+
+func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData interface{}) (map[string]string, error) {
+	res := make(map[string]string)
+	data, err := p.doRequestRaw(ctx, pocketPath, reqData)
+	if err != nil {
+		return nil, err
 	}
 
 	err = json.Unmarshal(data, &res)

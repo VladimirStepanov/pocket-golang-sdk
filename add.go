@@ -1,5 +1,12 @@
 package pocket
 
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/url"
+)
+
 type DomainMetadata struct {
 	Name          string `json:"name"`
 	Logo          string `json:"logo"`
@@ -44,4 +51,44 @@ type Item struct {
 type AddResponse struct {
 	Item   Item `json:"item"`
 	Status int  `json:"status"`
+}
+
+type AddData struct {
+	Url     string `json:"url"`
+	Title   string `json:"title,omitempty"`
+	Tags    string `json:"tags,omitempty"` // A comma-separated list of tags to apply to the item
+	TweetID string `json:"tweet_id,omitempty"`
+}
+
+type addRequest struct {
+	*AddData
+	ConsumerKey string `json:"consumer_key"`
+	AccessToken string `json:"access_token"`
+}
+
+func (p *Pocket) Add(ctx context.Context, ad *AddData) (*AddResponse, error) {
+	u, err := url.Parse(ad.Url)
+	if err != nil {
+		return nil, fmt.Errorf("error while parsing url field from AddData struct: %w", err)
+	}
+	ad.Url = u.String()
+
+	req := addRequest{
+		AddData:     ad,
+		ConsumerKey: p.consumerKey,
+		AccessToken: p.accessToken,
+	}
+
+	data, err := p.doRequestRaw(ctx, addPath, req)
+	if err != nil {
+		return nil, err
+	}
+
+	res := AddResponse{}
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return nil, fmt.Errorf("error while unmarshalling request data: %w", err)
+	}
+
+	return &res, nil
 }

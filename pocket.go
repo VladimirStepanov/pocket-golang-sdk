@@ -16,11 +16,14 @@ const (
 	baseURL          = "https://getpocket.com/"
 	requestTokenPath = "/v3/oauth/request"
 	accessTokenPath  = "/v3/oauth/authorize"
+	authPath         = "/auth/authorize"
 )
 
 const (
-	requestTokenKey = "code"
-	accessTokenKey  = "access_token"
+	requestTokenKey        = "code"
+	accessTokenKey         = "access_token"
+	requestTokenQueryParam = "request_token"
+	redirectUriQueryParam  = "redirect_uri"
 )
 
 type Pocket struct {
@@ -162,4 +165,18 @@ func (p *Pocket) AuthUser(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+func (p *Pocket) BuildAuthUrl(redirectUri string) (string, error) {
+	u, err := url.Parse(p.baseURL)
+	if err != nil {
+		return "", fmt.Errorf("error while building auth url: %w", err)
+	}
+	u.Path = path.Join(u.Path, authPath)
+	q := u.Query()
+	q.Add(requestTokenQueryParam, p.requestToken)
+	q.Add(redirectUriQueryParam, redirectUri)
+	u.RawQuery = q.Encode()
+
+	return u.String(), nil
 }

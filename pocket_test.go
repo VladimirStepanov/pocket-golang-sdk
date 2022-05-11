@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -364,4 +367,26 @@ func TestPocket_AuthUser(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPocket_BuildAuthUrl(t *testing.T) {
+	p := &Pocket{
+		consumerKey:  consumerKey,
+		requestToken: requestToken,
+		baseURL:      baseURL,
+	}
+
+	ru := "123"
+
+	u, err := url.Parse(p.baseURL)
+	require.NoError(t, err)
+	u.Path = path.Join(u.Path, authPath)
+	u.RawQuery = fmt.Sprintf(
+		"%s=%s&%s=%s",
+		redirectUriQueryParam, ru,
+		requestTokenQueryParam, requestToken)
+
+	bu, err := p.BuildAuthUrl(ru)
+	require.NoError(t, err)
+	require.Equal(t, u.String(), bu)
 }

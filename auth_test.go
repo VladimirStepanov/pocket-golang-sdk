@@ -33,6 +33,7 @@ const (
 	msgCodeNotFound       = "Code not found."
 	msgRejectedCode       = "User rejected code."
 	msgCodeAlreadyUsed    = "Already used code."
+	msgUnauthorized       = "A valid access token is required to access the requested API endpoint."
 )
 
 // x error codes
@@ -46,6 +47,7 @@ const (
 	xCodeNotFound       = "185"
 	xRejectedCode       = "158"
 	xCodeAlreadyUsed    = "159"
+	xUnauthorized       = "107"
 )
 
 func TestPocket_AuthApp(t *testing.T) {

@@ -39,9 +39,9 @@ type Item struct {
 	UsedFallback        string         `json:"used_fallback"`
 	Lang                string         `json:"lang"`
 	TimeFirstParsed     string         `json:"time_first_parsed"`
-	Authors             []interface{}  `json:"authors"`
-	Images              []interface{}  `json:"images"`
-	Videos              []interface{}  `json:"videos"`
+	Authors             interface{}    `json:"authors"`
+	Images              interface{}    `json:"images"`
+	Videos              interface{}    `json:"videos"`
 	ResolvedNormalURL   string         `json:"resolved_normal_url"`
 	DomainMetadata      DomainMetadata `json:"domain_metadata"`
 	TimeToRead          int            `json:"time_to_read"`

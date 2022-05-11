@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	redirectURL  = "https://google.com"
+	redirectURL  = "google.com"
 	consumerKey  = "consumer-key"
 	requestToken = "request-token"
 	accessToken  = "access-token"
@@ -376,17 +376,15 @@ func TestPocket_BuildAuthUrl(t *testing.T) {
 		baseURL:      baseURL,
 	}
 
-	ru := "123"
-
 	u, err := url.Parse(p.baseURL)
 	require.NoError(t, err)
 	u.Path = path.Join(u.Path, authPath)
 	u.RawQuery = fmt.Sprintf(
 		"%s=%s&%s=%s",
-		redirectUriQueryParam, ru,
+		redirectUriQueryParam, redirectURL,
 		requestTokenQueryParam, requestToken)
 
-	bu, err := p.BuildAuthUrl(ru)
+	bu, err := p.BuildAuthUrl(redirectURL)
 	require.NoError(t, err)
 	require.Equal(t, u.String(), bu)
 }

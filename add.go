@@ -53,7 +53,7 @@ type AddResponse struct {
 	Status int  `json:"status"`
 }
 
-type AddData struct {
+type AddInput struct {
 	Url     string `json:"url"`
 	Title   string `json:"title,omitempty"`
 	Tags    string `json:"tags,omitempty"` // A comma-separated list of tags to apply to the item
@@ -61,20 +61,20 @@ type AddData struct {
 }
 
 type addRequest struct {
-	*AddData
+	*AddInput
 	ConsumerKey string `json:"consumer_key"`
 	AccessToken string `json:"access_token"`
 }
 
-func (p *Pocket) Add(ctx context.Context, ad *AddData) (*AddResponse, error) {
+func (p *Pocket) Add(ctx context.Context, ad *AddInput) (*AddResponse, error) {
 	u, err := url.Parse(ad.Url)
 	if err != nil {
-		return nil, fmt.Errorf("error while parsing url field from AddData struct: %w", err)
+		return nil, fmt.Errorf("error while parsing url field from AddInput struct: %w", err)
 	}
 	ad.Url = u.String()
 
 	req := addRequest{
-		AddData:     ad,
+		AddInput:    ad,
 		ConsumerKey: p.consumerKey,
 		AccessToken: p.accessToken,
 	}

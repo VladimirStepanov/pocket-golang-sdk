@@ -22,7 +22,7 @@ func TestPocket_Add(t *testing.T) {
 		name        string
 		consumerKey string
 		expErr      *ErrorPocket
-		ad          *AddData
+		ad          *AddInput
 		handler     func(t *testing.T) http.HandlerFunc
 	}{
 		{
@@ -32,7 +32,7 @@ func TestPocket_Add(t *testing.T) {
 				Xcode:    xUnauthorized,
 				HttpCode: http.StatusUnauthorized,
 			},
-			ad: &AddData{
+			ad: &AddInput{
 				Url: redirectURL,
 			},
 			handler: func(t *testing.T) http.HandlerFunc {
@@ -47,7 +47,7 @@ func TestPocket_Add(t *testing.T) {
 		},
 		{
 			name: "Success",
-			ad: &AddData{
+			ad: &AddInput{
 				Url: redirectURL,
 			},
 			handler: func(t *testing.T) http.HandlerFunc {

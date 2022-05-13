@@ -6,19 +6,40 @@ import (
 	"fmt"
 )
 
+type ActionType string
+
 const (
-	ActionAddType = "add"
+	ActionAddType        ActionType = "add"
+	ActionArchiveType    ActionType = "archive"
+	ActionReaddType      ActionType = "readd"
+	ActionFavoriteType   ActionType = "favorite"
+	ActionUnfavoriteType ActionType = "unfavorite"
+	ActionDeleteType     ActionType = "delete"
 )
 
 type Actions []interface{}
 
+type action struct {
+	Action ActionType `json:"action"`
+	ItemID int64      `json:"item_id"`
+	Time   int64      `json:"time,omitempty"`
+}
+
+type (
+	ActionArchive    = action
+	ActionReadd      = action
+	ActionFavorite   = action
+	ActionUnfavorite = action
+	ActionDelete     = action
+)
+
 type ActionAdd struct {
-	Action string `json:"action"`
-	RefID  int64  `json:"ref_id,omitempty"`
-	Tags   string `json:"tags,omitempty"`
-	Time   int64  `json:"time,omitempty"`
-	Title  string `json:"title,omitempty"`
-	Url    string `json:"url,omitempty"` // MUST BE ENCODED
+	Action ActionType `json:"action"`
+	RefID  int64      `json:"ref_id,omitempty"`
+	Tags   string     `json:"tags,omitempty"`
+	Time   int64      `json:"time,omitempty"`
+	Title  string     `json:"title,omitempty"`
+	Url    string     `json:"url,omitempty"` // MUST BE ENCODED
 }
 
 type modifyRequest struct {

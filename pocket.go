@@ -19,6 +19,7 @@ const (
 	authPath         = "/auth/authorize"
 	addPath          = "/v3/add"
 	retrievePath     = "/v3/get"
+	modifyPath       = "/v3/send"
 )
 
 type Pocket struct {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 )
 
 const (
@@ -13,27 +12,13 @@ const (
 
 type Actions []interface{}
 
-func (actions *Actions) AppendActionAdd(ad *ActionAdd) (*ActionAdd, error) {
-	u, err := url.Parse(ad.Url)
-	if err != nil {
-		return nil, fmt.Errorf("error while parsing url field from ActionAdd struct: %w", err)
-	}
-	ad.Url = u.String()
-
-	ad.Action = ActionAddType
-
-	*actions = append(*actions, ad)
-
-	return ad, nil
-}
-
 type ActionAdd struct {
 	Action string `json:"action"`
 	RefID  int64  `json:"ref_id,omitempty"`
 	Tags   string `json:"tags,omitempty"`
 	Time   int64  `json:"time,omitempty"`
 	Title  string `json:"title,omitempty"`
-	Url    string `json:"url,omitempty"`
+	Url    string `json:"url,omitempty"` // MUST BE ENCODED
 }
 
 type modifyRequest struct {

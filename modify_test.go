@@ -52,7 +52,7 @@ func TestPocket_Modify(t *testing.T) {
 			},
 		},
 		{
-			name: "Success[action=add]",
+			name: "Success [action=add]",
 			actions: Actions{
 				&ActionAdd{
 					Action: ActionAddType,
@@ -74,6 +74,8 @@ func TestPocket_Modify(t *testing.T) {
 					if ok {
 						require.Equal(t, testUrl, addReq[urlKey])
 						require.Equal(t, ActionAddType, addReq[actionKey])
+					} else {
+						require.Fail(t, "can't assert interface type")
 					}
 
 					resp := &ModifyResponse{

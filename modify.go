@@ -22,9 +22,9 @@ type ActionAdd struct {
 }
 
 type modifyRequest struct {
-	Actions     []interface{} `json:"actions"`
-	ConsumerKey string        `json:"consumer_key"`
-	AccessToken string        `json:"access_token"`
+	Actions     Actions `json:"actions"`
+	ConsumerKey string  `json:"consumer_key"`
+	AccessToken string  `json:"access_token"`
 }
 
 type ModifyResponse struct {

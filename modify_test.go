@@ -14,11 +14,36 @@ import (
 )
 
 const (
-	testUrl = "https://vk.com"
-
-	urlKey    = "url"
 	actionKey = "action"
 )
+
+func checkActionHandler(t *testing.T, expectedAction ActionType) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+
+		req := modifyRequest{}
+		require.NoError(t, json.Unmarshal(data, &req))
+
+		require.Equal(t, consumerKey, req.ConsumerKey)
+		require.Equal(t, accessToken, req.AccessToken)
+		addReq, ok := req.Actions[0].(map[string]interface{})
+
+		require.True(t, ok)
+		reqAct, ok := addReq[actionKey].(string)
+		require.True(t, ok)
+		require.Equal(t, expectedAction, ActionType(reqAct))
+
+		resp := &ModifyResponse{
+			Status: successStatus,
+		}
+		data, err = json.Marshal(resp)
+		require.NoError(t, err)
+		w.Header().Add("Content-type", "application/json")
+		w.Write(data)
+		w.WriteHeader(http.StatusOK)
+	}
+}
 
 func TestPocket_Modify(t *testing.T) {
 	tests := []struct {
@@ -38,7 +63,6 @@ func TestPocket_Modify(t *testing.T) {
 			actions: Actions{
 				&ActionAdd{
 					Action: ActionAddType,
-					Url:    testUrl,
 				},
 			},
 			handler: func(t *testing.T) http.HandlerFunc {
@@ -56,37 +80,65 @@ func TestPocket_Modify(t *testing.T) {
 			actions: Actions{
 				&ActionAdd{
 					Action: ActionAddType,
-					Url:    testUrl,
 				},
 			},
 			handler: func(t *testing.T) http.HandlerFunc {
-				return func(w http.ResponseWriter, r *http.Request) {
-					data, err := io.ReadAll(r.Body)
-					require.NoError(t, err)
-
-					req := modifyRequest{}
-					require.NoError(t, json.Unmarshal(data, &req))
-
-					require.Equal(t, consumerKey, req.ConsumerKey)
-					require.Equal(t, accessToken, req.AccessToken)
-					addReq, ok := req.Actions[0].(map[string]interface{})
-
-					if ok {
-						require.Equal(t, testUrl, addReq[urlKey])
-						require.Equal(t, ActionAddType, addReq[actionKey])
-					} else {
-						require.Fail(t, "can't assert interface type")
-					}
-
-					resp := &ModifyResponse{
-						Status: successStatus,
-					}
-					data, err = json.Marshal(resp)
-					require.NoError(t, err)
-					w.Header().Add("Content-type", "application/json")
-					w.Write(data)
-					w.WriteHeader(http.StatusOK)
-				}
+				return checkActionHandler(t, ActionAddType)
+			},
+		},
+		{
+			name: "Success [action=archive]",
+			actions: Actions{
+				&Action{
+					Action: ActionArchiveType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionArchiveType)
+			},
+		},
+		{
+			name: "Success [action=readd]",
+			actions: Actions{
+				&Action{
+					Action: ActionReaddType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionReaddType)
+			},
+		},
+		{
+			name: "Success [action=favorite]",
+			actions: Actions{
+				&Action{
+					Action: ActionFavoriteType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionFavoriteType)
+			},
+		},
+		{
+			name: "Success [action=unfavorite]",
+			actions: Actions{
+				&Action{
+					Action: ActionUnfavoriteType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionUnfavoriteType)
+			},
+		},
+		{
+			name: "Success [action=delete]",
+			actions: Actions{
+				&Action{
+					Action: ActionDeleteType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionDeleteType)
 			},
 		},
 	}

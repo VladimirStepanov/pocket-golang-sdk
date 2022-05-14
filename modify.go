@@ -19,19 +19,11 @@ const (
 
 type Actions []interface{}
 
-type action struct {
+type Action struct {
 	Action ActionType `json:"action"`
 	ItemID int64      `json:"item_id"`
 	Time   int64      `json:"time,omitempty"`
 }
-
-type (
-	ActionArchive    = action
-	ActionReadd      = action
-	ActionFavorite   = action
-	ActionUnfavorite = action
-	ActionDelete     = action
-)
 
 type ActionAdd struct {
 	Action ActionType `json:"action"`

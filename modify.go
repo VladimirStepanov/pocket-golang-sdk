@@ -37,7 +37,7 @@ type ActionAdd struct {
 	Tags   string     `json:"tags,omitempty"`
 	Time   int64      `json:"time,omitempty"`
 	Title  string     `json:"title,omitempty"`
-	Url    string     `json:"url,omitempty"` // MUST BE ENCODED
+	Url    string     `json:"url"` // MUST BE ENCODED
 }
 
 type tagsAction struct {

@@ -89,7 +89,7 @@ func TestPocket_Modify(t *testing.T) {
 		{
 			name: "Success [action=archive]",
 			actions: Actions{
-				&Action{
+				&ActionArchive{
 					Action: ActionArchiveType,
 				},
 			},
@@ -100,7 +100,7 @@ func TestPocket_Modify(t *testing.T) {
 		{
 			name: "Success [action=readd]",
 			actions: Actions{
-				&Action{
+				&ActionReadd{
 					Action: ActionReaddType,
 				},
 			},
@@ -111,7 +111,7 @@ func TestPocket_Modify(t *testing.T) {
 		{
 			name: "Success [action=favorite]",
 			actions: Actions{
-				&Action{
+				&ActionFavorite{
 					Action: ActionFavoriteType,
 				},
 			},
@@ -122,7 +122,7 @@ func TestPocket_Modify(t *testing.T) {
 		{
 			name: "Success [action=unfavorite]",
 			actions: Actions{
-				&Action{
+				&ActionUnfavorite{
 					Action: ActionUnfavoriteType,
 				},
 			},
@@ -133,12 +133,78 @@ func TestPocket_Modify(t *testing.T) {
 		{
 			name: "Success [action=delete]",
 			actions: Actions{
-				&Action{
+				&ActionDelete{
 					Action: ActionDeleteType,
 				},
 			},
 			handler: func(t *testing.T) http.HandlerFunc {
 				return checkActionHandler(t, ActionDeleteType)
+			},
+		},
+		{
+			name: "Success [action=tags_add]",
+			actions: Actions{
+				&ActionTagsAdd{
+					Action: ActionTagsAddType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionTagsAddType)
+			},
+		},
+		{
+			name: "Success [action=tags_remove]",
+			actions: Actions{
+				&ActionTagsRemove{
+					Action: ActionTagsRemoveType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionTagsRemoveType)
+			},
+		},
+		{
+			name: "Success [action=tags_replace]",
+			actions: Actions{
+				&ActionTagsReplace{
+					Action: ActionTagsReplaceType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionTagsReplaceType)
+			},
+		},
+		{
+			name: "Success [action=tags_clear]",
+			actions: Actions{
+				&ActionTagsClear{
+					Action: ActionTagsClearType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionTagsClearType)
+			},
+		},
+		{
+			name: "Success [action=tag_rename]",
+			actions: Actions{
+				&ActionTagRename{
+					Action: ActionTagRenameType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionTagRenameType)
+			},
+		},
+		{
+			name: "Success [action=tag_delete]",
+			actions: Actions{
+				&ActionTagDelete{
+					Action: ActionTagDeleteType,
+				},
+			},
+			handler: func(t *testing.T) http.HandlerFunc {
+				return checkActionHandler(t, ActionTagDeleteType)
 			},
 		},
 	}

@@ -333,8 +333,8 @@ func TestPocket_AuthUser(t *testing.T) {
 					require.Equal(t, requestToken, req.Code)
 					require.Equal(t, accessTokenPath, r.URL.Path)
 
-					resp := map[string]string{
-						accessTokenKey: accessToken,
+					resp := AuthUserResponse{
+						AccessToken: accessToken,
 					}
 					data, err = json.Marshal(resp)
 					require.NoError(t, err)

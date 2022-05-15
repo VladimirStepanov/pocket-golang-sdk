@@ -91,17 +91,16 @@ func (p *Pocket) doRequestRaw(ctx context.Context, pocketPath string, reqData in
 	return data, nil
 }
 
-func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData interface{}) (map[string]string, error) {
-	res := make(map[string]string)
+func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData interface{}, res interface{}) error {
 	data, err := p.doRequestRaw(ctx, pocketPath, reqData)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = json.Unmarshal(data, &res)
+	err = json.Unmarshal(data, res)
 	if err != nil {
-		return nil, fmt.Errorf("error while unmarshalling http response body: %w", err)
+		return fmt.Errorf("error while unmarshalling http response body: %w", err)
 	}
 
-	return res, nil
+	return nil
 }

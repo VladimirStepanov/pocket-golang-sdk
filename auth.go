@@ -20,14 +20,15 @@ type codeRequest struct {
 }
 
 func (p *Pocket) GenerateRequestToken(ctx context.Context, redirectURI string) (string, error) {
-	resp, err := p.doRequest(ctx, requestTokenPath, &codeRequest{
+	res := make(map[string]string)
+	err := p.doRequest(ctx, requestTokenPath, &codeRequest{
 		ConsumerKey: p.consumerKey,
 		RedirectUri: redirectURI,
-	})
+	}, &res)
 	if err != nil {
 		return "", err
 	}
-	return resp[requestTokenKey], nil
+	return res[requestTokenKey], nil
 }
 
 func (p *Pocket) GetRequestToken() string {
@@ -53,14 +54,15 @@ type accessTokenRequest struct {
 }
 
 func (p *Pocket) GenerateAccessToken(ctx context.Context) (string, error) {
-	resp, err := p.doRequest(ctx, accessTokenPath, &accessTokenRequest{
+	res := make(map[string]string)
+	err := p.doRequest(ctx, accessTokenPath, &accessTokenRequest{
 		ConsumerKey: p.consumerKey,
 		Code:        p.requestToken,
-	})
+	}, &res)
 	if err != nil {
 		return "", err
 	}
-	return resp[accessTokenKey], nil
+	return res[accessTokenKey], nil
 }
 
 func (p *Pocket) GetAccessToken() string {

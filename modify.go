@@ -2,8 +2,6 @@ package pocket
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 )
 
 type ActionType string
@@ -92,15 +90,11 @@ func (p *Pocket) Modify(ctx context.Context, actions Actions) (*ModifyResponse, 
 		AccessToken: p.accessToken,
 	}
 
-	data, err := p.doRequestRaw(ctx, modifyPath, req)
+	res := ModifyResponse{}
+	err := p.doRequest(ctx, modifyPath, req, &res)
 	if err != nil {
 		return nil, err
 	}
 
-	res := ModifyResponse{}
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return nil, fmt.Errorf("error while unmarshalling response data: %w", err)
-	}
 	return &res, nil
 }

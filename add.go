@@ -2,8 +2,6 @@ package pocket
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 )
 
 type DomainMetadata struct {
@@ -72,15 +70,10 @@ func (p *Pocket) Add(ctx context.Context, ad *AddInput) (*AddResponse, error) {
 		AccessToken: p.accessToken,
 	}
 
-	data, err := p.doRequestRaw(ctx, addPath, req)
+	res := AddResponse{}
+	err := p.doRequest(ctx, addPath, req, &res)
 	if err != nil {
 		return nil, err
-	}
-
-	res := AddResponse{}
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return nil, fmt.Errorf("error while unmarshalling request data: %w", err)
 	}
 
 	return &res, nil

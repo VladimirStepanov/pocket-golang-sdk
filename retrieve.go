@@ -2,8 +2,6 @@ package pocket
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 )
 
 // state
@@ -164,16 +162,10 @@ func (p *Pocket) Retrieve(ctx context.Context, rd *RetrieveInput) (*RetrieveResp
 		AccessToken:   p.accessToken,
 	}
 
-	data, err := p.doRequestRaw(ctx, retrievePath, req)
+	res := RetrieveResponse{}
+	err := p.doRequest(ctx, retrievePath, req, &res)
 	if err != nil {
 		return nil, err
 	}
-
-	res := RetrieveResponse{}
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return nil, fmt.Errorf("error while unmarshalling request data: %w", err)
-	}
-
 	return &res, nil
 }

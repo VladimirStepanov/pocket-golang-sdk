@@ -9,7 +9,6 @@ import (
 
 const (
 	requestTokenKey        = "code"
-	accessTokenKey         = "access_token"
 	requestTokenQueryParam = "request_token"
 	redirectUriQueryParam  = "redirect_uri"
 )
@@ -17,6 +16,11 @@ const (
 type codeRequest struct {
 	ConsumerKey string `json:"consumer_key"`
 	RedirectUri string `json:"redirect_uri"`
+}
+
+type AuthUserResponse struct {
+	AccessToken string `json:"access_token"`
+	Username    string `json:"username"`
 }
 
 func (p *Pocket) GenerateRequestToken(ctx context.Context, redirectURI string) (string, error) {
@@ -53,16 +57,16 @@ type accessTokenRequest struct {
 	Code        string `json:"code"`
 }
 
-func (p *Pocket) GenerateAccessToken(ctx context.Context) (string, error) {
-	res := make(map[string]string)
+func (p *Pocket) GenerateAccessToken(ctx context.Context) (*AuthUserResponse, error) {
+	res := AuthUserResponse{}
 	err := p.doRequest(ctx, accessTokenPath, &accessTokenRequest{
 		ConsumerKey: p.consumerKey,
 		Code:        p.requestToken,
 	}, &res)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return res[accessTokenKey], nil
+	return &res, nil
 }
 
 func (p *Pocket) GetAccessToken() string {
@@ -75,10 +79,11 @@ func (p *Pocket) SetAccessToken(at string) {
 
 func (p *Pocket) AuthUser(ctx context.Context) error {
 	var err error
-	p.accessToken, err = p.GenerateAccessToken(ctx)
+	resp, err := p.GenerateAccessToken(ctx)
 	if err != nil {
 		return err
 	}
+	p.SetAccessToken(resp.AccessToken)
 	return nil
 }
 

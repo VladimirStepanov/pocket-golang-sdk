@@ -64,7 +64,8 @@ func TestPocket_Retrieve(t *testing.T) {
 					data, err = json.Marshal(resp)
 					require.NoError(t, err)
 					w.Header().Add("Content-type", "application/json")
-					w.Write(data)
+					_, err = w.Write(data)
+					require.NoError(t, err)
 					w.WriteHeader(http.StatusOK)
 				}
 			},

@@ -388,7 +388,7 @@ func TestPocket_BuildAuthUrl(t *testing.T) {
 		redirectUriQueryParam, redirectURL,
 		requestTokenQueryParam, requestToken)
 
-	bu, err := p.BuildAuthUrl(redirectURL)
+	bu, err := p.MakeAuthUrl(redirectURL)
 	require.NoError(t, err)
 	require.Equal(t, u.String(), bu)
 }

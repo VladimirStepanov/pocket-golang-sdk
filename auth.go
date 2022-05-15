@@ -80,7 +80,7 @@ func (p *Pocket) AuthUser(ctx context.Context) error {
 	return nil
 }
 
-func (p *Pocket) BuildAuthUrl(redirectUri string) (string, error) {
+func (p *Pocket) MakeAuthUrl(redirectUri string) (string, error) {
 	u, err := url.Parse(p.baseURL)
 	if err != nil {
 		return "", fmt.Errorf("error while building auth url: %w", err)

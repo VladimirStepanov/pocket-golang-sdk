@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 )
 
 type DomainMetadata struct {
@@ -54,7 +53,7 @@ type AddResponse struct {
 }
 
 type AddInput struct {
-	Url     string `json:"url"`
+	Url     string `json:"url"` // MUST BE ENCODED
 	Title   string `json:"title,omitempty"`
 	Tags    string `json:"tags,omitempty"` // A comma-separated list of tags to apply to the item
 	TweetID string `json:"tweet_id,omitempty"`
@@ -67,12 +66,6 @@ type addRequest struct {
 }
 
 func (p *Pocket) Add(ctx context.Context, ad *AddInput) (*AddResponse, error) {
-	u, err := url.Parse(ad.Url)
-	if err != nil {
-		return nil, fmt.Errorf("error while parsing url field from AddInput struct: %w", err)
-	}
-	ad.Url = u.String()
-
 	req := addRequest{
 		AddInput:    ad,
 		ConsumerKey: p.consumerKey,

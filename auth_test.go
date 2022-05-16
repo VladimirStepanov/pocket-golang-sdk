@@ -16,10 +16,11 @@ import (
 )
 
 const (
-	redirectURL  = "google.com"
-	consumerKey  = "consumer-key"
-	requestToken = "request-token"
-	accessToken  = "access-token"
+	redirectURL     = "google.com"
+	consumerKey     = "consumer-key"
+	requestTokenKey = "code"
+	requestToken    = "request-token"
+	accessToken     = "access-token"
 )
 
 // messages

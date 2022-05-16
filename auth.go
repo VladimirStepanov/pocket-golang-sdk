@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	requestTokenKey        = "code"
 	requestTokenQueryParam = "request_token"
 	redirectUriQueryParam  = "redirect_uri"
 )
@@ -23,16 +22,20 @@ type AuthUserResponse struct {
 	Username    string `json:"username"`
 }
 
-func (p *Pocket) GenerateRequestToken(ctx context.Context, redirectURI string) (string, error) {
-	res := make(map[string]string)
+type AuthAppResponse struct {
+	Code string `json:"code"`
+}
+
+func (p *Pocket) GenerateRequestToken(ctx context.Context, redirectURI string) (*AuthAppResponse, error) {
+	res := AuthAppResponse{}
 	err := p.doRequest(ctx, requestTokenPath, &codeRequest{
 		ConsumerKey: p.consumerKey,
 		RedirectUri: redirectURI,
 	}, &res)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return res[requestTokenKey], nil
+	return &res, nil
 }
 
 func (p *Pocket) GetRequestToken() string {
@@ -45,10 +48,11 @@ func (p *Pocket) SetRequestToken(requestToken string) {
 
 func (p *Pocket) AuthApp(ctx context.Context, redirectURI string) error {
 	var err error
-	p.requestToken, err = p.GenerateRequestToken(ctx, redirectURI)
+	resp, err := p.GenerateRequestToken(ctx, redirectURI)
 	if err != nil {
 		return err
 	}
+	p.SetRequestToken(resp.Code)
 	return nil
 }
 

@@ -91,8 +91,8 @@ func (p *Pocket) doRequestRaw(ctx context.Context, pocketPath string, reqData in
 	return data, nil
 }
 
-func (p *Pocket) doRequest(ctx context.Context, pocketPath string, reqData interface{}, res interface{}) error {
-	data, err := p.doRequestRaw(ctx, pocketPath, reqData)
+func (p *Pocket) doRequest(ctx context.Context, path string, reqData interface{}, res interface{}) error {
+	data, err := p.doRequestRaw(ctx, path, reqData)
 	if err != nil {
 		return err
 	}

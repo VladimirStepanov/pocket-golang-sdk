@@ -12,19 +12,26 @@ const (
 	redirectUriQueryParam  = "redirect_uri"
 )
 
-type codeRequest struct {
-	ConsumerKey string `json:"consumer_key"`
-	RedirectUri string `json:"redirect_uri"`
-}
+type (
+	codeRequest struct {
+		ConsumerKey string `json:"consumer_key"`
+		RedirectUri string `json:"redirect_uri"`
+	}
 
-type AuthUserResponse struct {
-	AccessToken string `json:"access_token"`
-	Username    string `json:"username"`
-}
+	AuthUserResponse struct {
+		AccessToken string `json:"access_token"`
+		Username    string `json:"username"`
+	}
 
-type AuthAppResponse struct {
-	Code string `json:"code"`
-}
+	AuthAppResponse struct {
+		Code string `json:"code"`
+	}
+
+	accessTokenRequest struct {
+		ConsumerKey string `json:"consumer_key"`
+		Code        string `json:"code"`
+	}
+)
 
 func (p *Pocket) GenerateRequestToken(ctx context.Context, redirectURI string) (*AuthAppResponse, error) {
 	res := AuthAppResponse{}
@@ -54,11 +61,6 @@ func (p *Pocket) AuthApp(ctx context.Context, redirectURI string) error {
 	}
 	p.SetRequestToken(resp.Code)
 	return nil
-}
-
-type accessTokenRequest struct {
-	ConsumerKey string `json:"consumer_key"`
-	Code        string `json:"code"`
 }
 
 func (p *Pocket) GenerateAccessToken(ctx context.Context) (*AuthUserResponse, error) {

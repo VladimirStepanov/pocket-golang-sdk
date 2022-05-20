@@ -1,9 +1,9 @@
 ## Overview
 
-This is simple SDK implementation for the [Pocket](https://getpocket.com/developer/?src=footer_v2)
-Before using it, you must create a [Pocket Application](https://getpocket.com/developer/apps/new)
+This is simple SDK implementation for the [Pocket](https://getpocket.com/developer/?src=footer_v2).
+Before using it, you should create a [Pocket Application](https://getpocket.com/developer/apps/new)
 
-This SDK implements all [Developer API features](https://getpocket.com/developer/docs/overview):
+This SDK implements all developer API features:
 
 - [Authentication](https://getpocket.com/developer/docs/authentication)
 - [Modify](https://getpocket.com/developer/docs/v3/modify)
@@ -16,8 +16,15 @@ This SDK implements all [Developer API features](https://getpocket.com/developer
 - [Authentication](#authentication)
   - [Create a pocket object](#create-a-pocket-object)
   - [Generate a request token](#generate-a-request-token)
-  - [User authorization](#user-authorization)
+  - [Generate an authorization link](#generate-an-authorization-link)
   - [Generate an access token](#generate-an-access-token)
+- [Add](#add)
+- [Retrieve](#retrieve)
+- [Modification](#modification)
+  - [Actions](#actions)
+  - [Tags](#tags)
+  - [Usage](#usage)
+- [Errors](#errors)
 
 ## Installation
 
@@ -68,7 +75,7 @@ p.SetRequestToken(res.Code)
 fmt.Println("Request token", p.GetRequestToken())
 ```
 
-### User authorization
+### Generate an authorization link
 
 Once you have a request token, you need to redirect the user to Pocket to authorize your
 application's request token. For getting authorize link use this method:
@@ -102,4 +109,215 @@ if err != nil {
 }
 p.SetAccessToken(at.AccessToken)
 fmt.Println("Access token", p.GetAccessToken())
+```
+
+## Add
+
+*NOTE* You can add multiple items at a time. See [Modification](#modification).
+
+Input model:
+```go
+type AddInput struct {
+    Url     string `json:"url"` // The URL of the item you want to save. MUST BE ENCODED
+    Title   string `json:"title,omitempty"`
+    Tags    string `json:"tags,omitempty"` // A comma-separated list of tags to apply to the item
+    TweetID string `json:"tweet_id,omitempty"` // If you are adding Pocket support to a Twitter client, please send along a reference to the tweet status
+}
+```
+
+Response model:
+```go
+type AddResponse struct {
+    Item   Item `json:"item"` // very big struct, see file add.go
+    Status int  `json:"status"`
+}
+```
+
+Usage:
+```go
+_, err = p.Add(context.Background(), &pocket.AddInput{
+    Url:  "https://www.youtube.com/watch?v=fJHNhL1FUEs&ab_channel=GolangCafe",
+    Tags: "codding",
+})
+
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+## Retrieve
+
+Retrieve model:
+```go
+type RetrieveInput struct {
+	State       State       `json:"state,omitempty"` // [unread | archive | all]. see  State consts
+	Favorite    *Favorite   `json:"favorite"` //  [0 - un-favorited | 1 = favorited]. see Favorite consts
+	Tag         string      `json:"tag,omitempty"` // [*tag_name* | _untagged_]
+	ContentType ContentType `json:"contentType,omitempty"` // [article | video | image]. see ContentType consts
+	Sort        Sort        `json:"sort,omitempty"` // [newest | oldest | title | site]. see Sort consts
+	DetailType  DetailType  `json:"detailType,omitempty"` // [simple | complete]. see DetailType consts
+	Search      string      `json:"search,omitempty"` // Only return items whose title or url contain the search string
+	Domain      string      `json:"domain,omitempty"` // Only return items from a particular domain
+	Since       *int64      `json:"since,omitempty"` // Only return items modified since the given since unix timestamp
+	Count       int64       `json:"count,omitempty"` // Only return count number of items
+	Offset      int64       `json:"offset,omitempty"` // Used only with count; start returning from offset position
+	// of results
+}
+```
+
+Retrieve response:
+```go
+type RetrieveResponse struct {
+	Status     int                         `json:"status"`
+	Complete   int                         `json:"complete"`
+	SearchMeta SearchMeta                  `json:"search_meta"`
+	Since      int                         `json:"since"`
+	List       map[string]RetrieveListItem `json:"list"` // very big struct, see file retrieve.go
+}
+```
+
+Example:
+
+```go
+retrRes, err := p.Retrieve(context.Background(), &pocket.RetrieveInput{
+    State:       pocket.Unread,
+    Tag:         pocket.Untagged,
+    ContentType: pocket.ArticleType,
+    Sort:        pocket.Title,
+    DetailType:  pocket.Simple,
+})
+
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Println(retrRes)
+```
+
+## Modification
+
+[Modify](https://getpocket.com/developer/docs/v3/modify) method accept different actions in one array. For
+ the actions exist special type:
+
+```go
+type Actions []interface{}
+```
+
+Every action is a structure, with special Action type. Some actions have identical structure, but you must set
+different type.
+
+### Actions
+
+```go
+const (
+    ActionAddType         ActionType = "add"
+    ActionArchiveType     ActionType = "archive"
+    ActionReaddType       ActionType = "readd"
+    ActionFavoriteType    ActionType = "favorite"
+    ActionUnfavoriteType  ActionType = "unfavorite"
+    ActionDeleteType      ActionType = "delete"
+)
+
+type (
+    action struct {
+        Action ActionType `json:"action"`
+        ItemID int64      `json:"item_id"`
+        Time   int64      `json:"time,omitempty"`
+    }
+    
+    ActionAdd struct {
+        Action ActionType `json:"action"`
+        RefID  int64      `json:"ref_id,omitempty"` // A Twitter status id; this is used to show tweet attribution
+        Tags   string     `json:"tags,omitempty"` // A comma-delimited list of one or more tags
+        Time   int64      `json:"time,omitempty"` // The time the action occurred
+        Title  string     `json:"title,omitempty"` // 	The title of the item
+        Url    string     `json:"url"` // The url of the item; provide this only if you do not have. MUST BE ENCODED
+    }
+)
+
+type (
+    ActionArchive     action
+    ActionReadd       action
+    ActionFavorite    action
+    ActionUnfavorite  action
+    ActionDelete      action
+)
+```
+
+### Tags
+
+```go
+const (
+    ActionTagsAddType     ActionType = "tags_add"
+    ActionTagsRemoveType  ActionType = "tags_remove"
+    ActionTagsReplaceType ActionType = "tags_replace"
+    ActionTagsClearType   ActionType = "tags_clear"
+    ActionTagRenameType   ActionType = "tag_rename"
+    ActionTagDeleteType   ActionType = "tag_delete"
+)
+
+type (
+    tagsAction struct {
+        Action ActionType `json:"action"`
+        ItemID string     `json:"item_id"` // The id of the item to perform the action on
+        Tags   string     `json:"tags"` // A comma-delimited list of one or more tags
+        Time   int64      `json:"time,omitempty"` // The time the action occurred
+    }
+    
+    ActionTagRename struct {
+        Action ActionType `json:"action"`
+        ItemID string     `json:"item_id"` // The id of the item to perform the action on
+        OldTag string     `json:"old_tag"` // The tag name that will be replaced
+        NewTag string     `json:"new_tag"` // The new tag name that will be added
+        Time   int64      `json:"time,omitempty"`
+    }
+    
+    ActionTagDelete struct {
+        Action ActionType `json:"action"`
+        ItemID string     `json:"item_id"` // The id of the item to perform the action on
+        Tag    string     `json:"tag"` // The tag name that will be deleted
+        Time   int64      `json:"time,omitempty"`
+    }
+)
+
+type (
+	ActionTagsAdd     tagsAction
+	ActionTagsRemove  tagsAction
+	ActionTagsReplace tagsAction
+	ActionTagsClear   action
+)
+```
+
+### Usage
+
+```go
+modRes, err := p.Modify(context.Background(), pocket.Actions{
+    &pocket.ActionAdd{
+        Action: pocket.ActionAddType,
+        Tags:   "codding",
+        Url:    "https://www.youtube.com/watch?v=fJHNhL1FUEs&ab_channel=GolangCafe",
+    },
+    &pocket.ActionDelete{
+        Action: pocket.ActionDeleteType,
+        ItemID: 777,
+    },
+})
+
+if err != nil {
+    log.Fatal(err)
+}
+
+fmt.Println(modRes)
+```
+
+## Errors
+
+For Pocket errors you can custom error structure:
+
+```go
+type ErrorPocket struct {
+	Message  string
+	Xcode    string // see X-Code-Error here https://getpocket.com/developer/docs/authentication
+	HttpCode int
+}
 ```

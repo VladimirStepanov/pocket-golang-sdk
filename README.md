@@ -3,7 +3,7 @@
 This is simple SDK implementation for the [Pocket](https://getpocket.com/developer/?src=footer_v2).
 Before using it, you should create a [Pocket Application](https://getpocket.com/developer/apps/new)
 
-This SDK implements all developer API features:
+The SDK implements all developer API features:
 
 - [Authentication](https://getpocket.com/developer/docs/authentication)
 - [Modify](https://getpocket.com/developer/docs/v3/modify)
@@ -13,8 +13,8 @@ This SDK implements all developer API features:
 ## Content
 
 - [Installation](#installation)
+- [Create a pocket object](#create-a-pocket-object)
 - [Authentication](#authentication)
-  - [Create a pocket object](#create-a-pocket-object)
   - [Generate a request token](#generate-a-request-token)
   - [Generate an authorization link](#generate-an-authorization-link)
   - [Generate an access token](#generate-an-access-token)
@@ -34,21 +34,20 @@ To install the package run:
 go get -u github.com/VladimirStepanov/pocket-golang-sdk
 ```
 
-## Authentication
+## Create a pocket object
 
-Authentication performs in 4 steps:
-- create a Pocket object
-- get a request token
-- user authorization
-- convert a request token into a Pocket access token
-
-### Create a pocket object
-
-For creating a Pocket object, you need a consumer key, you've gotten after app registration
+For creating a Pocket object, you need to use the consumer key, which you've gotten after app registration.
 
 ```go
 p := pocket.New("consumer-key")
 ```
+
+## Authentication
+
+Authentication performs in 3 steps:
+- get a request token
+- user authorization
+- convert a request token into a Pocket access token
 
 ### Generate a request token
 
@@ -77,8 +76,8 @@ fmt.Println("Request token", p.GetRequestToken())
 
 ### Generate an authorization link
 
-Once you have a request token, you need to redirect the user to Pocket to authorize your
-application's request token. For getting authorize link use this method:
+Once you've had a request token, you need to redirect the user to Pocket to authorize your
+application's request token. For getting authorize link, use this method:
 
 ```go
 link := p.MakeAuthUrl("redirect-url")
@@ -113,7 +112,7 @@ fmt.Println("Access token", p.GetAccessToken())
 
 ## Add
 
-*NOTE* You can add multiple items at a time. See [Modification](#modification).
+**NOTE**: You can add multiple items at the same time. See [Modification](#modification).
 
 Input model:
 ```go
@@ -160,8 +159,7 @@ type RetrieveInput struct {
 	Domain      string      `json:"domain,omitempty"` // Only return items from a particular domain
 	Since       *int64      `json:"since,omitempty"` // Only return items modified since the given since unix timestamp
 	Count       int64       `json:"count,omitempty"` // Only return count number of items
-	Offset      int64       `json:"offset,omitempty"` // Used only with count; start returning from offset position
-	// of results
+	Offset      int64       `json:"offset,omitempty"` // Used only with count; start returning from offset position of results
 }
 ```
 
@@ -203,10 +201,9 @@ fmt.Println(retrRes)
 type Actions []interface{}
 ```
 
-Every action is a structure, with special Action type. Some actions have identical structure, but you must set
-different type.
-
 ### Actions
+
+Every action is a structure, with special Action field. The field has own value for every action.
 
 ```go
 const (
@@ -259,23 +256,21 @@ const (
 type (
     tagsAction struct {
         Action ActionType `json:"action"`
-        ItemID string     `json:"item_id"` // The id of the item to perform the action on
-        Tags   string     `json:"tags"` // A comma-delimited list of one or more tags
-        Time   int64      `json:"time,omitempty"` // The time the action occurred
+        ItemID int64      `json:"item_id"`
+        Tags   string     `json:"tags"`
+        Time   int64      `json:"time,omitempty"`
     }
-    
+
     ActionTagRename struct {
         Action ActionType `json:"action"`
-        ItemID string     `json:"item_id"` // The id of the item to perform the action on
-        OldTag string     `json:"old_tag"` // The tag name that will be replaced
-        NewTag string     `json:"new_tag"` // The new tag name that will be added
+        OldTag string     `json:"old_tag"`
+        NewTag string     `json:"new_tag"`
         Time   int64      `json:"time,omitempty"`
     }
     
     ActionTagDelete struct {
         Action ActionType `json:"action"`
-        ItemID string     `json:"item_id"` // The id of the item to perform the action on
-        Tag    string     `json:"tag"` // The tag name that will be deleted
+        Tag    string     `json:"tag"`
         Time   int64      `json:"time,omitempty"`
     }
 )
@@ -301,6 +296,11 @@ modRes, err := p.Modify(context.Background(), pocket.Actions{
         Action: pocket.ActionDeleteType,
         ItemID: 777,
     },
+    &pocket.ActionTagsAdd{
+        Action: pocket.ActionTagsAddType,
+        ItemID: 777,
+        Tags:   "tag1,tag2",
+    },
 })
 
 if err != nil {
@@ -312,7 +312,7 @@ fmt.Println(modRes)
 
 ## Errors
 
-For Pocket errors you can custom error structure:
+For Pocket errors exist this structure:
 
 ```go
 type ErrorPocket struct {

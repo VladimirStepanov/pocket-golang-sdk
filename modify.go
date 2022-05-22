@@ -52,14 +52,13 @@ type (
 
 	tagsAction struct {
 		Action ActionType `json:"action"`
-		ItemID string     `json:"item_id"`
+		ItemID int64      `json:"item_id"`
 		Tags   string     `json:"tags"`
 		Time   int64      `json:"time,omitempty"`
 	}
 
 	ActionTagRename struct {
 		Action ActionType `json:"action"`
-		ItemID string     `json:"item_id"`
 		OldTag string     `json:"old_tag"`
 		NewTag string     `json:"new_tag"`
 		Time   int64      `json:"time,omitempty"`
@@ -67,7 +66,6 @@ type (
 
 	ActionTagDelete struct {
 		Action ActionType `json:"action"`
-		ItemID string     `json:"item_id"`
 		Tag    string     `json:"tag"`
 		Time   int64      `json:"time,omitempty"`
 	}
